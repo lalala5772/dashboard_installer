@@ -6,6 +6,9 @@ from datetime import datetime
 from multiprocessing import Process, Lock
 import pymysql
 import cv2
+import requests
+import json
+
 #import numpy as np
 
 
@@ -24,32 +27,35 @@ def sensorData():
     DataList = Data.split(',')
 
     return DataList
-        
 
-#로컬 db에 저장하는 코드
-def dbsaver(imageUrl):
-    data = sensorData()
-    
-    sensordb = pymysql.connect(
-    user='root',
-    passwd='1234',
-    host='localhost',
-    db='dataDB'
-    )
-    
-    cursor = sensordb.cursor(pymysql.cursors.DictCursor)
+
+def dbsaver():
+    # sensor_value = sensorData()
+    # sensor_key = [ 'soilMoist', 'temperature']
+    #sensor_data = zip(sensor_key, sensor_data)
+
+    url = "http://15.164.90.233:7077/create/sensor_data"
+    sensor_data = {"soilMoist": 29.9, "temperature": 24, }
+    headers = {'Content-Type': 'application/json'}
+    data_str = json.dumps(sensor_data, default=str)
+
+    ## 생성 시에는 POST 를 사용함
+    response = requests.post(url, data = data_str, headers = headers)
+
+    if response.status_code == 200:
+        print("OK")
+    else:
+        print("Error")
+
 
     
-    try:
-        sql = "INSERT INTO sensor(date, soilMoist, temperature, state, imageUrl) VALUES(DEFAULT, %s, %s, %s, %s)"
-        val = (float(data[0]), float(data[1]), data[2], imageUrl)
-        cursor.execute(sql, val)
+
+
     
-        sensordb.commit()
-    
-    finally:
-        sensordb.close()
-        print(data)
+
+
+
+
 
 
         
@@ -75,7 +81,8 @@ def take_Pic():
     cap.release()
     cv2.destroyAllWindows()
 
-    dbsaver(output_path)
+    # dbsaver(output_path) 
+    dbsaver()
 
 
 
