@@ -18,9 +18,9 @@
     <table>
       <thead>
         <tr>
-          <th>ID</th>
+          <th>FarmID</th>
           <th>Date</th>
-          <th>SoilMoist</th>
+          <th>Moisture</th>
           <th>Temperature</th>
           <th>State</th>
           
@@ -28,23 +28,31 @@
       </thead>
       <tbody id="data-container">
       <script>
-        // 실시간으로 데이터 업데이트 함수
+
         function updateData() {
             $.ajax({
-                url: 'get_data.php', // 데이터를 가져오는 PHP 파일
+                url: "http://15.164.90.233:7077/fetch/sensor_data", // 데이터를 가져오는 PHP 파일
                 method: 'GET',
                 dataType: 'json',
                 success: function(data) {
-                    // 데이터 테이블을 비우고 새로운 데이터 추가
+
                     $("#data-container").empty();
                     data.forEach(function(row) {
+                      let state;
+                      if (row.moisture < 25) {
+                          state = "low";
+                        } else if (row.moisture >= 25 && row.moisture < 50) {
+                          state = "good";
+                        } else {
+                          state = "enough";
+                        }
                         $("#data-container").append(
                             '<tr>' +
-                            '<td>' + row.id + '</td>' +
-                            '<td>' + row.date + '</td>' +
-                            '<td>' + row.soilMoist + '</td>' +
+                            '<td>' + row.farmid + '</td>' +
+                            '<td>' + row.checkdate + '</td>' +
+                            '<td>' + row.moisture + '</td>' +
                             '<td>' + row.temperature + '</td>' +
-                            '<td>' + row.state + '</td>' +
+                            '<td>' + state + '</td>' +
                             '</tr>'
                         );
                     });
@@ -149,17 +157,17 @@
   // 실시간으로 데이터 업데이트 함수
   function updateGraphs() {
     $.ajax({
-      url: 'get_data.php', // 데이터를 가져오는 PHP 파일
+      url: 'http://15.164.90.233:7077/fetch/sensor_data', // 데이터를 가져오는 PHP 파일
       method: 'GET',
       dataType: 'json',
       success: function(data) {
         // 데이터 그래프 업데이트
         var labels = data.map(function(row) {
-          return row.date;
+          return row.checkdate;
         });
 
         var soilMoistureData = data.map(function(row) {
-          return row.soilMoist;
+          return row.moisture;
         });
 
         var temperatureData = data.map(function(row) {
@@ -204,40 +212,39 @@
     </table>
   <script>
         // 실시간으로 데이터 업데이트 함수
-        function updateImage() {
-    $.ajax({
-      url: 'get_data.php', // 데이터를 가져오는 PHP 파일
-      method: 'GET',
-      dataType: 'json',
-      success: function(data) {
-        // 데이터 테이블을 비우고 새로운 데이터 추가
-        $("#image-container").empty();
-        data.forEach(function(row) {
-          $("#image-container").append(
-            '<figure class="fir-img-figure">' +
-            '<img class="fir-author-img fir-clickcircle" src="' + row.imageUrl + '" alt="Image" onclick="window.open(\'' + row.imageUrl + '\')">' + 
-            '<figcaption>' +
-            '<div class="fig-author-figure-title">' + row.id + '</div>' +
-            '<div class="fig-author-figure-title">' + row.date + '</div>' +
-            '<div class="fig-author-figure-title">' + row.imageUrl + '</div>' +
-            '</figcaption>' +
-            '</figure>'
-          );
-        });
-        // 다시 업데이트 요청
-        updateImage();
-      },
-      error: function() {
-        // 에러 발생 시 다시 업데이트 요청
-        updateImage();
-      }
-    });
-  }
+  //       function updateImage() {
+  //   $.ajax({
+  //     url: 'http://15.164.90.233:7077/fetch/sensor_data', // 데이터를 가져오는 PHP 파일
+  //     method: 'GET',
+  //     dataType: 'json',
+  //     success: function(data) {
+  //       // 데이터 테이블을 비우고 새로운 데이터 추가
+  //       $("#image-container").empty();
+  //       data.forEach(function(row) {
+  //         $("#image-container").append(
+  //           '<figure class="fir-img-figure">' +
+  //           '<img class="fir-author-img fir-clickcircle" src="' + row.imageUrl + '" alt="Image" onclick="window.open(\'' + row.imageUrl + '\')">' + 
+  //           '<figcaption>' +
+  //           '<div class="fig-author-figure-title">' + row.id + '</div>' +
+  //           '<div class="fig-author-figure-title">' + row.date + '</div>' +
+  //           '<div class="fig-author-figure-title">' + row.imageUrl + '</div>' +
+  //           '</figcaption>' +
+  //           '</figure>'
+  //         );
+  //       });
+  //       // 다시 업데이트 요청
+  //       updateImage();
+  //     },
+  //     error: function() {
+  //       // 에러 발생 시 다시 업데이트 요청
+  //       updateImage();
+  //     }
+  //   });
+  // }
 
-  // 페이지 로드 후 초기 업데이트 함수 호출
-  $(document).ready(function() {
-    updateImage();
-  });
+  // $(document).ready(function() {
+  //   updateImage();
+  // });
     </script>
 
  
